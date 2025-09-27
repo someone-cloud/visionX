@@ -9,7 +9,7 @@ import os
 
 # --- SETTINGS ---
 IMG_SIZE = 32  # CIFAR-10 image size
-MODEL_PATH = "visionx.h5"  # must be in repo root
+MODEL_PATH = "visionx_model.h5"  # must be in repo root
 
 # --- CLASS NAMES & FUN FACTS ---
 class_names = [
