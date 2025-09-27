@@ -1,83 +1,79 @@
+# visionx_app.py
 
+# --- IMPORTS ---
 import streamlit as st
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from tensorflow.keras.preprocessing import image
+import os
 
-# Load model once and cache
-@st.cache_resource
-def load_model():
-    return tf.keras.models.load_model("visionx_model.h5")
+# ✅ Set page config BEFORE anything else
+st.set_page_config(page_title="VisionX", layout="centered")
 
-model = load_model()
-class_names = ["airplane","automobile","bird","cat","deer","dog","frog","horse","ship","truck"]
+# --- SETTINGS ---
+IMG_SIZE = 32  # CIFAR-10 image size
+MODEL_PATH = "visionx_model"  # SavedModel format (a directory, not .h5)
 
-# Page config
-st.set_page_config(
-    page_title="VisionX",
-    page_icon="👁️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# --- CLASS NAMES & FUN FACTS ---
+class_names = [
+    "airplane", "automobile", "bird", "cat", "deer",
+    "dog", "frog", "horse", "ship", "truck"
+]
 
-# Dark theme CSS
-st.markdown("""
-    <style>
-    .main {background-color: #111111; color: #EEEEEE;}
-    h1 {text-align: center; color: #00C9A7;}
-    .stImage {border-radius: 12px;}
-    .stButton>button {background-color: #00C9A7; color: black; font-weight: bold;}
-    </style>
-""", unsafe_allow_html=True)
-
-# Title
-st.markdown("<h1>👁️ VisionX - CIFAR-10 Classifier</h1>", unsafe_allow_html=True)
-st.write("Upload an image to see AI classification, confidence bars, and fun facts!")
-
-# Fun facts for all classes
-facts = {
-    "airplane": "✈️ Some planes, like the Gulfstream G800, can fly at Mach 0.95 — by the time you blink, it could have completed a 100-meter race!",
-    "automobile": "🚗 The Bugatti Chiron can accelerate from 0-100 km/h in just 2.4 seconds — faster than a cheetah!",
-    "bird": "🦜 Peregrine falcons can dive at over 320 km/h — fastest animal on Earth!",
-    "cat": "🐱 A cat’s purring can promote healing and reduce stress — tiny feline therapy!",
-    "deer": "🦌 A deer can jump up to 3 meters high and 9 meters long — Olympic-level leaping!",
-    "dog": "🐶 Dogs can understand up to 250 words and gestures — super-smart and human-friendly!",
-    "frog": "🐸 The Goliath frog can grow over 32 cm and weigh 3 kg — giant among frogs!",
-    "horse": "🐴 Horses can sleep both lying down and standing up thanks to a special leg mechanism!",
-    "ship": "🚢 The largest ship ever built, the Seawise Giant, was 458 meters long — longer than 4 football fields!",
-    "truck": "🚚 The BelAZ 75710 truck can carry 450 tons — heavier than 6 blue whales!"
+fun_facts = {
+    "airplane": "Some planes like the Gulfstream G800 can fly at Mach 0.95.",
+    "automobile": "The world's first practical automobile was built in 1885.",
+    "bird": "The fastest bird is the peregrine falcon, reaching 389 km/h.",
+    "cat": "Cats can rotate their ears 180 degrees independently.",
+    "deer": "Deer have excellent night vision due to a reflective layer behind their retina.",
+    "dog": "Dogs have about 220 million scent receptors, far more than humans.",
+    "frog": "Some frogs can freeze completely and survive the winter.",
+    "horse": "Horses sleep both lying down and standing up.",
+    "ship": "The largest ship ever built was the Seawise Giant, 458 meters long.",
+    "truck": "The fastest production truck is the Ram 1500 TRX, reaching 100 km/h in 4.5 seconds."
 }
 
-# Upload image
-uploaded_file = st.file_uploader("Upload an image", type=["jpg","png"])
+# --- LOAD MODEL ---
+@st.cache_resource
+def load_visionx_model():
+    if not os.path.exists(MODEL_PATH):
+        st.error(f"Model not found at path: {MODEL_PATH}")
+        return None
+    model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
 
-if uploaded_file:
-    # Process image
-    img = tf.keras.utils.load_img(uploaded_file, target_size=(32,32))
-    img_array = tf.keras.utils.img_to_array(img)
-    img_array = np.expand_dims(img_array/255.0, axis=0)
+model = load_visionx_model()
+
+# --- STREAMLIT INTERFACE ---
+st.title("VisionX: CIFAR-10 Classifier with Fun Facts")
+st.write("Upload an image, and VisionX will predict its class with confidence levels.")
+
+uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg"])
+
+if uploaded_file and model:
+    # Load image
+    img = image.load_img(uploaded_file, target_size=(IMG_SIZE, IMG_SIZE))
+    img_array = image.img_to_array(img) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)  # shape: (1, IMG_SIZE, IMG_SIZE, 3)
 
     # Predict
-    preds = model.predict(img_array)
-    pred_class = class_names[np.argmax(preds)]
-    confidence = np.max(preds)*100
+    predictions = model.predict(img_array)
+    predicted_index = np.argmax(predictions)
+    predicted_class = class_names[predicted_index]
+    confidence = predictions[0][predicted_index]
 
-    # Layout: two columns
-    col1, col2 = st.columns([1,2])
+    # Display prediction
+    st.subheader(f"Prediction: {predicted_class} ({confidence * 100:.2f}% confidence)")
 
-    # Column 1: uploaded image + prediction
-    with col1:
-        st.image(img, caption="Uploaded Image", use_column_width=True)
-        st.subheader(f"🔮 Prediction: **{pred_class}**")
-        st.write(f"Confidence: **{confidence:.2f}%**")
-        st.info(f"💡 Fun Fact: {facts.get(pred_class,'No fun fact stored yet!')}")
+    # Fun fact
+    fact = fun_facts.get(predicted_class, "No fun fact available.")
+    st.info(f"Fun Fact: {fact}")
 
-    # Column 2: confidence chart
-    with col2:
-        st.markdown("### 📊 Confidence Levels")
-        fig, ax = plt.subplots(figsize=(6,4))
-        ax.bar(class_names, preds[0], color="#00C9A7")
-        ax.set_xticks(range(len(class_names)))
-        ax.set_xticklabels(class_names, rotation=45)
-        ax.set_ylabel("Probability")
-        st.pyplot(fig)
+    # Confidence bar chart
+    fig, ax = plt.subplots()
+    ax.barh(class_names, predictions[0])
+    ax.set_xlabel("Confidence")
+    ax.set_title("Prediction Confidence for All Classes")
+    st.pyplot(fig)
