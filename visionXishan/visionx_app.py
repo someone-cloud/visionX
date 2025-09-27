@@ -13,7 +13,7 @@ st.set_page_config(page_title="VisionX", layout="centered")
 
 # --- SETTINGS ---
 IMG_SIZE = 32  # CIFAR-10 image size
-MODEL_PATH = "visionx_model"  # SavedModel format (a directory, not .h5)
+MODEL_PATH = "visionx_model"  # Path to SavedModel folder (not .h5)
 
 # --- CLASS NAMES & FUN FACTS ---
 class_names = [
@@ -38,25 +38,33 @@ fun_facts = {
 @st.cache_resource
 def load_visionx_model():
     if not os.path.exists(MODEL_PATH):
-        st.error(f"Model not found at path: {MODEL_PATH}")
         return None
-    model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    return model
+    try:
+        model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        return model
+    except Exception as e:
+        st.error(f"Failed to load model: {e}")
+        return None
 
 model = load_visionx_model()
 
 # --- STREAMLIT INTERFACE ---
 st.title("VisionX: CIFAR-10 Classifier with Fun Facts")
+
+if not model:
+    st.error("🚫 Model not found or failed to load. Make sure the folder `visionx_model/` exists in the project root and contains a valid SavedModel.")
+    st.stop()
+
 st.write("Upload an image, and VisionX will predict its class with confidence levels.")
 
 uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg"])
 
-if uploaded_file and model:
+if uploaded_file:
     # Load image
     img = image.load_img(uploaded_file, target_size=(IMG_SIZE, IMG_SIZE))
     img_array = image.img_to_array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)  # shape: (1, IMG_SIZE, IMG_SIZE, 3)
+    img_array = np.expand_dims(img_array, axis=0)
 
     # Predict
     predictions = model.predict(img_array)
@@ -71,7 +79,7 @@ if uploaded_file and model:
     fact = fun_facts.get(predicted_class, "No fun fact available.")
     st.info(f"Fun Fact: {fact}")
 
-    # Confidence bar chart
+    # Show confidence bar chart
     fig, ax = plt.subplots()
     ax.barh(class_names, predictions[0])
     ax.set_xlabel("Confidence")
