@@ -41,7 +41,8 @@ def load_visionx_model(path):
 from tensorflow.keras.models import load_model
 
 # Load your trained model safely
-model = load_model("visionx_model.h5", compile=False)
+model = load_model("visionx_model.keras", compile=False)
+
 
 # Recompile to use it
 model.compile(
