@@ -3,13 +3,12 @@ import streamlit as st
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import os
 
 # --- SETTINGS ---
 IMG_SIZE = 32  # CIFAR-10 image size
-MODEL_PATH = "visionx_model.h5"  # must be in repo root
+MODEL_PATH = "visionx_model.keras"  # Make sure this .keras model file exists in root
 
 # --- CLASS NAMES & FUN FACTS ---
 class_names = [
@@ -30,26 +29,17 @@ fun_facts = {
     "truck": "The fastest production truck is the Ram 1500 TRX, reaching 100 km/h in 4.5 seconds."
 }
 
-# --- LOAD MODEL ---
+# --- LOAD MODEL (cached) ---
 @st.cache_resource
 def load_visionx_model(path):
     if not os.path.exists(path):
-        st.error(f"Model file {path} not found in repo root!")
+        st.error(f"Model file '{path}' not found in repo root!")
         return None
-    return load_model(path)
+    model = tf.keras.models.load_model(path, compile=False)
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
 
-from tensorflow.keras.models import load_model
-
-# Load your trained model safely
-model = load_model("visionx_model.keras", compile=False)
-
-
-# Recompile to use it
-model.compile(
-    optimizer='adam',
-    loss='categorical_crossentropy',
-    metrics=['accuracy']
-)
+model = load_visionx_model(MODEL_PATH)
 
 # --- STREAMLIT INTERFACE ---
 st.title("VisionX: CIFAR-10 Classifier with Fun Facts")
@@ -58,10 +48,10 @@ st.write("Upload an image, and VisionX will predict its class with confidence le
 uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg"])
 
 if uploaded_file and model:
-    # Load image
+    # Load and preprocess image
     img = image.load_img(uploaded_file, target_size=(IMG_SIZE, IMG_SIZE))
     img_array = image.img_to_array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)  # shape: (1, IMG_SIZE, IMG_SIZE, 3)
+    img_array = np.expand_dims(img_array, axis=0)  # (1, IMG_SIZE, IMG_SIZE, 3)
 
     # Predict
     predictions = model.predict(img_array)
@@ -69,9 +59,10 @@ if uploaded_file and model:
     predicted_class = class_names[predicted_index]
     confidence = predictions[0][predicted_index]
 
-    st.subheader(f"Prediction: {predicted_class} ({confidence*100:.2f}% confidence)")
-    
-    # Fun fact
+    # Show prediction
+    st.subheader(f"Prediction: {predicted_class} ({confidence * 100:.2f}% confidence)")
+
+    # Show fun fact
     fact = fun_facts.get(predicted_class, "No fun fact available.")
     st.info(f"Fun Fact: {fact}")
 
@@ -79,5 +70,7 @@ if uploaded_file and model:
     fig, ax = plt.subplots()
     ax.barh(class_names, predictions[0])
     ax.set_xlabel("Confidence")
-    ax.set_title("Prediction Confidence for all Classes")
+    ax.set_title("Prediction Confidence for All Classes")
     st.pyplot(fig)
+elif uploaded_file and not model:
+    st.error("Model failed to load. Please check your model file.")
