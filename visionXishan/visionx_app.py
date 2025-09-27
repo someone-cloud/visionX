@@ -23,14 +23,12 @@ class_names = [
 ]
 
 fun_facts = {
-    "airplane": "Some planes like the Gulfstream G800 can fly at Mach 0.95.
-    this means that by the time you blink your eyes, a G800 would have completed a 100 meter race",
+    "airplane": "Some planes like the Gulfstream G800 can fly at Mach 0.95. this means that by the time you blink your eyes, a G800 would have completed a 100 meter race",
     "automobile": "The airbags in your car inflate in 40 miliseconds at speeds of up to 7242km/h",
     "bird": "The fastest bird is the peregrine falcon, reaching 389 km/h.",
     "cat": "A cat's whiskers are as sensitive as human fingertips.",
     "deer": "Deer have excellent night vision due to a reflective layer behind their retina.",
-    "dog": "Dogs evolved from the gray wolf. This means that a cute little french
-    bulldog was once a ferocious hunter.",
+    "dog": "Dogs evolved from the gray wolf. This means that a cute little french bulldog was once a ferocious hunter.",
     "frog": "The most colorful and vibrant frogs are often the most poisonous ones.",
     "horse": "Horses sleep both lying down and standing up.",
     "ship": "Nuclear powered ships can run for up to 25 years before needing to refuel.",
