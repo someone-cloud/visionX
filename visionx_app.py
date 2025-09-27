@@ -51,3 +51,47 @@ def load_visionx_model(path):
         return model
     except Exception as e:
         st.error(f"❌ Failed to load model from `{path}`.\n\n**Details:** {e}")
+        return None  # <--- Important to return None here to avoid NoneType errors
+
+# Load model
+model = load_visionx_model(MODEL_PATH)
+
+# --- STREAMLIT INTERFACE ---
+st.title("🧠 VisionX: CIFAR-10 Classifier with Fun Facts")
+st.write("Upload a CIFAR-10-style image (32×32), and VisionX will predict the class.")
+
+uploaded_file = st.file_uploader("📷 Choose an image...", type=["png", "jpg", "jpeg"])
+
+if uploaded_file and model:
+    try:
+        # Load and preprocess image
+        img = image.load_img(uploaded_file, target_size=(IMG_SIZE, IMG_SIZE))
+        img_array = image.img_to_array(img) / 255.0
+        img_array = np.expand_dims(img_array, axis=0)  # Shape: (1, 32, 32, 3)
+
+        # Predict
+        predictions = model.predict(img_array)
+        predicted_index = np.argmax(predictions)
+        predicted_class = class_names[predicted_index]
+        confidence = predictions[0][predicted_index]
+
+        # Show prediction
+        st.subheader(f"🔍 Prediction: **{predicted_class}**")
+        st.write(f"Confidence: `{confidence * 100:.2f}%`")
+
+        # Fun fact
+        fact = fun_facts.get(predicted_class, "No fun fact available.")
+        st.info(f"💡 Fun Fact: {fact}")
+
+        # Confidence chart
+        fig, ax = plt.subplots()
+        ax.barh(class_names, predictions[0], color='skyblue')
+        ax.set_xlabel("Confidence")
+        ax.set_title("Prediction Confidence for All Classes")
+        st.pyplot(fig)
+
+    except Exception as e:
+        st.error(f"❗ An error occurred while processing the image.\n\n**Details:** {e}")
+
+elif uploaded_file and not model:
+    st.error("🚫 Model failed to load. Make sure `visionx_model.keras` exists in your project root.")
