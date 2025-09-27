@@ -54,7 +54,7 @@ def load_visionx_model(path):
 model = load_visionx_model(MODEL_PATH)
 
 # --- STREAMLIT INTERFACE ---
-st.title("🧠 VisionX: CIFAR-10 Classifier with Fun Facts")
+st.title("🧠 VisionX: CIFAR-10 Image Classifier")
 st.write("Upload a CIFAR-10-style image (32×32), and VisionX will predict the class.")
 
 uploaded_file = st.file_uploader("📷 Choose an image...", type=["png", "jpg", "jpeg"])
