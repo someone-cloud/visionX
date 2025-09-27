@@ -50,4 +50,4 @@ def load_visionx_model(path):
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         return model
     except Exception as e:
-        st.error(f"❌ Failed to load model from `{path}`.\n\n
+        st.error(f"❌ Failed to load model from `{path}`.\n\n**Details:** {e}")
