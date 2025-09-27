@@ -1,4 +1,6 @@
 # visionx_app.py
+
+# --- IMPORTS ---
 import streamlit as st
 import tensorflow as tf
 import numpy as np
@@ -6,9 +8,12 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing import image
 import os
 
+# ✅ Set Streamlit page config early
+st.set_page_config(page_title="VisionX", layout="centered")
+
 # --- SETTINGS ---
 IMG_SIZE = 32  # CIFAR-10 image size
-MODEL_PATH = "visionx_model.keras"  # Make sure this .keras model file exists in root
+MODEL_PATH = "visionx_model.keras"  # Must be a .keras file (Keras 3 recommended format)
 
 # --- CLASS NAMES & FUN FACTS ---
 class_names = [
@@ -33,44 +38,55 @@ fun_facts = {
 @st.cache_resource
 def load_visionx_model(path):
     if not os.path.exists(path):
-        st.error(f"Model file '{path}' not found in repo root!")
+        st.error(f"🚫 Model file not found at: `{path}`")
         return None
-    model = tf.keras.models.load_model(path, compile=False)
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    return model
+    try:
+        model = tf.keras.models.load_model(path, compile=False)
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        return model
+    except Exception as e:
+        st.error(f"❌ Failed to load model from `{path}`.\n\n**Details:** {e}")
+        return None
 
+# Load model
 model = load_visionx_model(MODEL_PATH)
 
 # --- STREAMLIT INTERFACE ---
-st.title("VisionX: CIFAR-10 Classifier with Fun Facts")
-st.write("Upload an image, and VisionX will predict its class with confidence levels.")
+st.title("🧠 VisionX: CIFAR-10 Classifier with Fun Facts")
+st.write("Upload a CIFAR-10-style image (32×32), and VisionX will predict the class.")
 
-uploaded_file = st.file_uploader("Choose an image...", type=["png", "jpg", "jpeg"])
+uploaded_file = st.file_uploader("📷 Choose an image...", type=["png", "jpg", "jpeg"])
 
 if uploaded_file and model:
-    # Load and preprocess image
-    img = image.load_img(uploaded_file, target_size=(IMG_SIZE, IMG_SIZE))
-    img_array = image.img_to_array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)  # (1, IMG_SIZE, IMG_SIZE, 3)
+    try:
+        # Load and preprocess image
+        img = image.load_img(uploaded_file, target_size=(IMG_SIZE, IMG_SIZE))
+        img_array = image.img_to_array(img) / 255.0
+        img_array = np.expand_dims(img_array, axis=0)  # Shape: (1, 32, 32, 3)
 
-    # Predict
-    predictions = model.predict(img_array)
-    predicted_index = np.argmax(predictions)
-    predicted_class = class_names[predicted_index]
-    confidence = predictions[0][predicted_index]
+        # Predict
+        predictions = model.predict(img_array)
+        predicted_index = np.argmax(predictions)
+        predicted_class = class_names[predicted_index]
+        confidence = predictions[0][predicted_index]
 
-    # Show prediction
-    st.subheader(f"Prediction: {predicted_class} ({confidence * 100:.2f}% confidence)")
+        # Show prediction
+        st.subheader(f"🔍 Prediction: **{predicted_class}**")
+        st.write(f"Confidence: `{confidence * 100:.2f}%`")
 
-    # Show fun fact
-    fact = fun_facts.get(predicted_class, "No fun fact available.")
-    st.info(f"Fun Fact: {fact}")
+        # Fun fact
+        fact = fun_facts.get(predicted_class, "No fun fact available.")
+        st.info(f"💡 Fun Fact: {fact}")
 
-    # Confidence bar chart
-    fig, ax = plt.subplots()
-    ax.barh(class_names, predictions[0])
-    ax.set_xlabel("Confidence")
-    ax.set_title("Prediction Confidence for All Classes")
-    st.pyplot(fig)
+        # Confidence chart
+        fig, ax = plt.subplots()
+        ax.barh(class_names, predictions[0], color='skyblue')
+        ax.set_xlabel("Confidence")
+        ax.set_title("Prediction Confidence for All Classes")
+        st.pyplot(fig)
+
+    except Exception as e:
+        st.error(f"❗ An error occurred while processing the image.\n\n**Details:** {e}")
+
 elif uploaded_file and not model:
-    st.error("Model failed to load. Please check your model file.")
+    st.error("🚫 Model failed to load. Make sure `visionx_model.keras` exists in your project root.")
