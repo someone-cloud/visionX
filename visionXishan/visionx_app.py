@@ -34,10 +34,6 @@ fun_facts = {
     "truck": "The fastest production truck is the Ram 1500 TRX, reaching 100 km/h in 4.5 seconds."
 }
 
-# Debug info
-st.write("🔍 MODEL_PATH =", MODEL_PATH)
-st.write("📍 Absolute path:", os.path.abspath(MODEL_PATH))
-st.write("📦 Exists:", os.path.exists(MODEL_PATH))
 
 # --- LOAD MODEL ---
 @st.cache_resource
