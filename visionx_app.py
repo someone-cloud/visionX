@@ -33,6 +33,9 @@ fun_facts = {
     "ship": "The largest ship ever built was the Seawise Giant, 458 meters long.",
     "truck": "The fastest production truck is the Ram 1500 TRX, reaching 100 km/h in 4.5 seconds."
 }
+st.write("MODEL_PATH =", MODEL_PATH)
+st.write("Absolute path:", os.path.abspath(MODEL_PATH))
+st.write("Exists:", os.path.exists(MODEL_PATH))
 
 # --- LOAD MODEL (cached) ---
 @st.cache_resource
