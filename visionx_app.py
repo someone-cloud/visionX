@@ -38,7 +38,17 @@ def load_visionx_model(path):
         return None
     return load_model(path)
 
-model = load_visionx_model(MODEL_PATH)
+from tensorflow.keras.models import load_model
+
+# Load your trained model safely
+model = load_model("visionx_model.h5", compile=False)
+
+# Recompile to use it
+model.compile(
+    optimizer='adam',
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
+)
 
 # --- STREAMLIT INTERFACE ---
 st.title("VisionX: CIFAR-10 Classifier with Fun Facts")
