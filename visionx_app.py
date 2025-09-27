@@ -23,16 +23,18 @@ class_names = [
 ]
 
 fun_facts = {
-    "airplane": "Some planes like the Gulfstream G800 can fly at Mach 0.95.",
-    "automobile": "The world's first practical automobile was built in 1885.",
+    "airplane": "Some planes like the Gulfstream G800 can fly at Mach 0.95.
+    this means that by the time you blink your eyes, a G800 would have completed a 100 meter race",
+    "automobile": "The airbags in your car inflate in 40 miliseconds at speeds of up to 7242km/h",
     "bird": "The fastest bird is the peregrine falcon, reaching 389 km/h.",
-    "cat": "Cats can rotate their ears 180 degrees independently.",
+    "cat": "A cat's whiskers are as sensitive as human fingertips.",
     "deer": "Deer have excellent night vision due to a reflective layer behind their retina.",
-    "dog": "Dogs have about 220 million scent receptors, far more than humans.",
-    "frog": "Some frogs can freeze completely and survive the winter.",
+    "dog": "Dogs evolved from the gray wolf. This means that a cute little french
+    bulldog was once a ferocious hunter.",
+    "frog": "The most colorful and vibrant frogs are often the most poisonous ones.",
     "horse": "Horses sleep both lying down and standing up.",
-    "ship": "The largest ship ever built was the Seawise Giant, 458 meters long.",
-    "truck": "The fastest production truck is the Ram 1500 TRX, reaching 100 km/h in 4.5 seconds."
+    "ship": "Nuclear powered ships can run for up to 25 years before needing to refuel.",
+    "truck": "The BelAZ 75710 is the world's largest truck. it has a capacity of 450 metric tonnes and can reach speeds of up to 64km/h."
 }
 
 
